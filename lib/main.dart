@@ -83,6 +83,61 @@ class _GameScreenState extends State<GameScreen> {
     });
   }
 
+  void _adivinarNumero() {
+    int numero = int.tryParse(_controladorNumero.text) ?? - 1;
+    
+    if (numero <=0 || numero > _numeroMaximo) {
+      _showError('Número fuera de rango. El número para este nivel es de 1 a $_numeroMaximo');
+      return;
+    }
+
+    setState(() {
+      _intentosRestantes--;
+
+      // Comprobamos si se adivino el numero
+      if (numero == _numeroSecreto) {
+        _historial.add(Tuple(numero, Colors.green));
+        _cambiarDificultad(_nivel);
+      } else if (numero > _numeroSecreto) {
+        _menorQue.add(Tuple(numero, Colors.white));
+      } else {
+        _mayorQue.add(Tuple(numero, Colors.white));
+      }
+      
+      // Cuando no se adivino el numero
+      if (_intentosRestantes <= 0) {
+        _historial.add(Tuple(_numeroSecreto, Colors.red));
+        _cambiarDificultad(_nivel);
+      }
+    });
+
+    _controladorNumero.clear();
+  }
+
+  void _showError(String mensaje) {
+    showDialog(
+      context: context, 
+      builder: (context) => AlertDialog(
+        title: Text('Error'),
+        content: Text(mensaje),
+        actions: [
+          TextButton(
+            onPressed: () {
+              Navigator.of(context).pop();
+            }, 
+            child: Text('Aceptar')
+          )
+        ],
+      )
+    );
+  }
+
+  @override
+  void initState() {
+    super.initState();
+    _cambiarDificultad(_nivel);
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -116,7 +171,7 @@ class _GameScreenState extends State<GameScreen> {
                       )
                     ),
                     onSubmitted: (_) {
-                      print('Numero ingresado'); // TODO: Llamar al metodo que verifica el numero ingresado
+                      _adivinarNumero();
                     },
                   ),
                 ),
