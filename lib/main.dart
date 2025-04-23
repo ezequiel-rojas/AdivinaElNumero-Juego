@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'dart:math';
 
 void main() => runApp(MyApp());
 
@@ -48,6 +49,39 @@ class _GameScreenState extends State<GameScreen> {
   List<Tuple<int, Color>> _menorQue = [];
   List<Tuple<int, Color>> _historial = [];
   TextEditingController _controladorNumero = TextEditingController();
+
+  // Metodo que cambia la dificultad del juego
+  void _cambiarDificultad(int nivel) {
+    setState(() {
+      _nivel = nivel;
+      switch (nivel) {
+        case 1:
+          _numeroMaximo = 10;
+          _intentosRestantes = 5;
+          _nivelString = 'Fácil';
+          break;
+        case 2:
+          _numeroMaximo = 20;
+          _intentosRestantes = 8;
+          _nivelString = 'Medio';
+          break;
+        case 3:
+          _numeroMaximo = 100;
+          _intentosRestantes = 15;
+          _nivelString = 'Avanzado';
+          break;
+        case 4:
+          _numeroMaximo = 1000;
+          _intentosRestantes = 25;
+          _nivelString = 'Extremo';
+          break;
+      }
+      _numeroSecreto = Random().nextInt(_numeroMaximo) + 1; // 1 - numeroMaximo
+      _mayorQue.clear();
+      _menorQue.clear();
+      _controladorNumero.clear();
+    });
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -99,11 +133,11 @@ class _GameScreenState extends State<GameScreen> {
             Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
-                Column(children: [Text('Mayor que')],), // TODO: Generar columnas correctamente
+                _buildColumn('Mayor que', _mayorQue),
                 SizedBox(width: 10),
-                Column(children: [Text('Menor que')],),
+                _buildColumn('Menor que', _menorQue),
                 SizedBox(width: 10),
-                Column(children: [Text('Historial')],),
+                _buildColumn('Historial', _historial),
                 SizedBox(width: 10),
               ],
             ),
@@ -118,11 +152,46 @@ class _GameScreenState extends State<GameScreen> {
               divisions: 3,
               activeColor: Colors.blue,
               onChanged: (double value) {
-                print('La dificultad cambió');  // TODO: Cambiar el nivel del juego
+                _cambiarDificultad(value.toInt());
               },
             )
           ],
         )
+      )
+    );
+  }
+
+  // Constructor de columnas de numeros
+  Widget _buildColumn(String titulo, List<Tuple<int, Color>> lista) {
+    return Expanded(
+      child: Container(
+        padding: EdgeInsets.all(8),
+        decoration: BoxDecoration(
+          border: Border.all(color: Colors.blue, width: 2),
+          borderRadius: BorderRadius.circular(8)
+        ),
+        child: Column(
+          children: [
+            Text(titulo),
+            SizedBox(height: 10),
+            Container(
+              height: 150,
+              child: ListView(
+                children: lista.map((tupla) {
+                  return Container(
+                    padding: EdgeInsets.all(8),
+                    child: Center(
+                      child: Text(
+                        '${tupla.item1}',
+                        style: TextStyle(fontSize: 18, color: tupla.item2),
+                      )
+                    )
+                  );
+                }).toList(),
+              ),
+            )
+          ],
+        ),
       )
     );
   }
